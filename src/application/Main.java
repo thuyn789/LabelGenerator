@@ -1,5 +1,15 @@
 package application;
 
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.*;
+
+import java.io.Console;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -11,7 +21,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.fxml.FXMLLoader;
 
 public class Main extends Application{
 
@@ -113,19 +122,34 @@ public class Main extends Application{
 		//Generator button
 		generatorButton = new Button("Generate Label");
 		GridPane.setConstraints(generatorButton, 1, 3);
-		
-		generatorButton.setOnAction(e -> dataHandler(
-				fileNameTextField.getText().trim(),
-				numberOfCartonTextField.getText().trim(),
-				orderQuantityTextField.getText().trim()));
+
+
+		generatorButton.setOnAction(e -> {
+			try {
+				dataHandler(
+						fileNameTextField.getText().trim(),
+						numberOfCartonTextField.getText().trim(),
+						orderQuantityTextField.getText().trim());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+
+
 
 		//Error Message for general purposes
 		errorMessage = new Label();
 		GridPane.setConstraints(errorMessage, 1, 4);
 	}
 
-	//Method to handle data from text fields
-	private void dataHandler(String fileNameData, String numberOfCartonData, String orderQuantityData) {
+	/**
+	 * Method to handle data from text fields
+	 * @param fileNameData
+	 * @param numberOfCartonData
+	 * @param orderQuantityData
+	 */
+	private void dataHandler(String fileNameData, String numberOfCartonData, String orderQuantityData) throws IOException {
 		if(fileNameData.length() == 0 || numberOfCartonData.length() == 0 || orderQuantityData.length() == 0) {
 			//Print to general error message and highlight message
 			errorMessage.setText("Xin Điền Thông Tin Đầy Đủ");
@@ -156,13 +180,19 @@ public class Main extends Application{
 		System.out.println("File Name: " + fileNameData);
 		System.out.println("Number of Carton: " + numberOfCarton);
 		System.out.println("Order Quantity: " + orderQuantity);
-		
+
 		String nameString = fileNameData;
-		labelGenerator(fileNameData, numberOfCarton, orderQuantity); //generating label
-		//dumpFunction(nameString);
+		//labelGenerator(fileNameData, numberOfCarton, orderQuantity); //generating label
+		dumpFunction(nameString);
 	}
 
-	//Method to validate input if a string is a integer
+	/**
+	 * Validate if input is an integer
+	 * @param input value from textfield
+	 * @param textField textfield
+	 * @param errorLabel error label right below the textfield
+	 * @return boolean
+	 */
 	private boolean isInt(String input,TextField textField, Label errorLabel) {
 		try {
 			Integer.parseInt(input);
@@ -181,7 +211,12 @@ public class Main extends Application{
 		}
 	}
 
-	//The main logic of the app
+	/**
+	 * This function will take in data and write to PDF file
+	 * @param fileName input filename
+	 * @param numberOfCarton number of boxes
+	 * @param orderQuantity number of labels per box
+	 */
 	private void labelGenerator(String fileName, int numberOfCarton, int orderQuantity) {		
 		if(numberOfCarton <= 0 || orderQuantity <= 0) {
 			System.out.println("Invalid input");
@@ -211,7 +246,22 @@ public class Main extends Application{
 		}
 	}
 
-	private void dumpFunction(String fileName) {
-		
+	private void dumpFunction(String fileName) throws IOException {
+		String path = "/home/thuyn789/Downloads/TestingPDF.pdf";
+		PdfWriter pdfWriter = new PdfWriter(path);
+		PdfDocument pdfDocument = new PdfDocument(pdfWriter);
+		Document document = new Document(pdfDocument);
+		pdfDocument.setDefaultPageSize(PageSize.A4);
+
+		float col = 280f;
+		float columnWidth[] = {col, col};
+
+		Table table = new Table(columnWidth);
+
+		table.addCell(new Cell().add(new Paragraph("INVOICE")));
+
+		document.add(table);
+		document.close();
+		System.out.println("PDF Created");
 	}
 }
